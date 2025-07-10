@@ -89,6 +89,9 @@ class Auth extends Controller
     
     public function create()
     {
+        $phone = $this->request->getPost('phone');
+        $cleanPhone = preg_replace('/[^0-9+]/', '', $phone); // Remove everything except digits and +
+        $this->request->setGlobal('post', array_merge($this->request->getPost(), ['phone' => $cleanPhone]));
         $rules = [
             'name' => 'required|min_length[2]|max_length[50]',
             'email' => 'required|valid_email|is_unique[users.email]',
@@ -107,7 +110,7 @@ class Auth extends Controller
             'email' => $this->request->getPost('email'),
             'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
             'business_name' => $this->request->getPost('business_name'),
-            'phone' => $this->request->getPost('phone'),
+            'phone' => $cleanPhone,
             'role' => 'user',
             'status' => 'active',
             'created_at' => date('Y-m-d H:i:s')
