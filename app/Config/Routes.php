@@ -3,7 +3,7 @@
 namespace Config;
 
 use CodeIgniter\Router\RouteCollection;
-
+$routes->setAutoRoute(true);
 /**
  * @var RouteCollection $routes
  */
