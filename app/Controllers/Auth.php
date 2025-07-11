@@ -119,7 +119,12 @@ class Auth extends Controller
             'confirm_password' => 'required|matches[password]',
             'business_name' => 'required|min_length[2]|max_length[100]',
             'business_type' => 'required|in_list[retail_florist,wholesale_florist,event_designer,wedding_specialist,funeral_director,other]',
-            'phone' => 'permit_empty|regex_match[/^\+?[0-9]{10,15}$/]',
+            'phone' => [
+                'rules' => 'permit_empty|regex_match[/^[0-9]{10,15}$/]',
+                'errors' => [
+                    'regex_match' => 'The phone field must contain 10-15 digits'
+                ]
+            ],
             'terms' => 'required'
         ];
         
@@ -136,7 +141,7 @@ class Auth extends Controller
             'business_name' => esc($this->request->getPost('business_name')),
             'business_type' => esc($this->request->getPost('business_type')),
             'business_address' => esc($this->request->getPost('business_address')),
-            'phone' => $cleanPhone,
+            'phone' => $cleanPhone ?: null,
             'role' => 'user',
             'status' => 'pending', // Changed to pending for email verification
             'verification_code' => $verificationCode,
