@@ -13,7 +13,7 @@ class Auth extends Controller
     public function __construct()
     {
         $this->userModel = new UserModel();
-        helper(['form', 'url']);
+        helper(['form', 'url', 'text']);
     }
     
     public function login()
@@ -33,6 +33,12 @@ class Auth extends Controller
     
     public function authenticate()
     {
+        // Rate limiting
+        $throttler = \Config\Services::throttler();
+        if ($throttler->check('login-' . $this->request->getIPAddress(), 5, MINUTE) === false) {
+            return redirect()->back()->with('error', 'Too many login attempts. Try again later.');
+        }
+
         $rules = [
             'email' => 'required|valid_email',
             'password' => 'required|min_length[6]'
@@ -53,16 +59,30 @@ class Auth extends Controller
                 return redirect()->back()->with('error', 'Your account is not active. Please contact administrator.');
             }
             
-            // Set session data
+            // Set session data with enhanced security
             $sessionData = [
                 'user_id' => $user['id'],
                 'email' => $user['email'],
                 'name' => $user['name'],
                 'role' => $user['role'],
-                'isLoggedIn' => true
+                'business_name' => $user['business_name'],
+                'isLoggedIn' => true,
+                'session_start' => time(),
+                'ip_address' => $this->request->getIPAddress(),
+                'user_agent' => $this->request->getUserAgent()
             ];
             
+            session()->regenerate();
             session()->set($sessionData);
+            
+            // Remember me functionality
+            if ($this->request->getPost('remember')) {
+                $rememberToken = bin2hex(random_bytes(32));
+                $this->userModel->update($user['id'], ['remember_token' => $rememberToken]);
+                
+                $response = service('response');
+                $response->setCookie('remember_token', $rememberToken, 30 * 86400);
+            }
             
             // Update last login
             $this->userModel->update($user['id'], ['last_login' => date('Y-m-d H:i:s')]);
@@ -90,41 +110,76 @@ class Auth extends Controller
     public function create()
     {
         $phone = $this->request->getPost('phone');
-        $cleanPhone = preg_replace('/[^0-9+]/', '', $phone); // Remove everything except digits and +
-        $this->request->setGlobal('post', array_merge($this->request->getPost(), ['phone' => $cleanPhone]));
+        $cleanPhone = preg_replace('/[^0-9+]/', '', $phone);
+        
         $rules = [
             'name' => 'required|min_length[2]|max_length[50]',
             'email' => 'required|valid_email|is_unique[users.email]',
             'password' => 'required|min_length[6]',
             'confirm_password' => 'required|matches[password]',
             'business_name' => 'required|min_length[2]|max_length[100]',
-            'phone' => 'permit_empty|regex_match[/^[\+]?[1-9][\d]{0,15}$/]'
+            'business_type' => 'required|in_list[retail_florist,wholesale_florist,event_designer,wedding_specialist,funeral_director,other]',
+            'phone' => 'permit_empty|regex_match[/^\+?[0-9]{10,15}$/]',
+            'terms' => 'required'
         ];
         
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
         
+        $verificationCode = bin2hex(random_bytes(16));
+        
         $userData = [
-            'name' => $this->request->getPost('name'),
-            'email' => $this->request->getPost('email'),
+            'name' => esc($this->request->getPost('name')),
+            'email' => esc($this->request->getPost('email')),
             'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'business_name' => $this->request->getPost('business_name'),
+            'business_name' => esc($this->request->getPost('business_name')),
+            'business_type' => esc($this->request->getPost('business_type')),
+            'business_address' => esc($this->request->getPost('business_address')),
             'phone' => $cleanPhone,
             'role' => 'user',
-            'status' => 'active',
+            'status' => 'pending', // Changed to pending for email verification
+            'verification_code' => $verificationCode,
             'created_at' => date('Y-m-d H:i:s')
         ];
         
         if ($this->userModel->insert($userData)) {
-            return redirect()->to('/login')->with('success', 'Registration successful! Please login.');
+            // Send verification email
+            // $this->sendVerificationEmail($userData['email'], $verificationCode);
+            
+            return redirect()->to('/login')->with('success', 'Registration successful! Please check your email to verify your account.');
         } else {
             return redirect()->back()->with('error', 'Registration failed. Please try again.');
         }
     }
     
+    public function verify($code)
+    {
+        $user = $this->userModel->where('verification_code', $code)->first();
+        
+        if (!$user) {
+            return redirect()->to('/login')->with('error', 'Invalid verification code.');
+        }
+        
+        $this->userModel->update($user['id'], [
+            'verification_code' => null,
+            'status' => 'active'
+        ]);
+        
+        return redirect()->to('/login')->with('success', 'Account verified successfully! You can now login.');
+    }
+    
     public function logout()
     {
+        // Delete remember token if exists
+        if (isset($_COOKIE['remember_token'])) {
+            $user = $this->userModel->where('remember_token', $_COOKIE['remember_token'])->first();
+            if ($user) {
+                $this->userModel->update($user['id'], ['remember_token' => null]);
+            }
+            service('response')->deleteCookie('remember_token');
+        }
+        
         session()->destroy();
         return redirect()->to('/login')->with('success', 'You have been logged out successfully.');
     }
@@ -138,7 +193,7 @@ class Auth extends Controller
         return view('auth/forgot_password', $data);
     }
     
-    public function resetPassword()
+    public function sendResetLink()
     {
         $rules = [
             'email' => 'required|valid_email'
@@ -168,5 +223,68 @@ class Auth extends Controller
         // $this->sendResetEmail($user['email'], $resetToken);
         
         return redirect()->to('/login')->with('success', 'Password reset link has been sent to your email.');
+    }
+    
+    public function showResetForm($token)
+    {
+        $user = $this->userModel->where('reset_token', $token)
+                               ->where('reset_expires >', date('Y-m-d H:i:s'))
+                               ->first();
+
+        if (!$user) {
+            return redirect()->to('/forgot-password')->with('error', 'Invalid or expired reset token.');
+        }
+
+        return view('auth/reset_password', [
+            'title' => 'Reset Password',
+            'token' => $token
+        ]);
+    }
+
+    public function processReset()
+    {
+        $rules = [
+            'token' => 'required',
+            'password' => 'required|min_length[6]',
+            'confirm_password' => 'required|matches[password]'
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $user = $this->userModel->where('reset_token', $this->request->getPost('token'))
+                               ->where('reset_expires >', date('Y-m-d H:i:s'))
+                               ->first();
+
+        if (!$user) {
+            return redirect()->to('/forgot-password')->with('error', 'Invalid or expired reset token.');
+        }
+
+        $this->userModel->update($user['id'], [
+            'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            'reset_token' => null,
+            'reset_expires' => null
+        ]);
+
+        return redirect()->to('/login')->with('success', 'Password reset successfully. Please login.');
+    }
+    
+    // Helper method to send verification email (implement according to your email service)
+    protected function sendVerificationEmail($email, $code)
+    {
+        // Implementation depends on your email service
+        // Example:
+        // $emailService = \Config\Services::email();
+        // $emailService->setTo($email);
+        // $emailService->setSubject('Verify Your Account');
+        // $emailService->setMessage(view('emails/verification', ['code' => $code]));
+        // $emailService->send();
+    }
+    
+    // Helper method to send password reset email
+    protected function sendResetEmail($email, $token)
+    {
+        // Similar implementation to sendVerificationEmail
     }
 }
