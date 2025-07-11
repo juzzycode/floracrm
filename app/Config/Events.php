@@ -24,6 +24,11 @@ use CodeIgniter\HotReloader\HotReloader;
  */
 
 Events::on('pre_system', static function () {
+    Events::on('post_controller_constructor', static function () {
+        $router = service('router');
+        log_message('debug', 'AutoRoute Hit - Controller: ' . get_class($router->controllerName()));
+        log_message('debug', 'AutoRoute Hit - Method: ' . $router->methodName());
+    });
     if (ENVIRONMENT !== 'testing') {
         if (ini_get('zlib.output_compression')) {
             throw FrameworkException::forEnabledZlibOutputCompression();
