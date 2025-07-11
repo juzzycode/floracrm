@@ -1,79 +1,72 @@
 <?php
-// app/Config/Routes.php
+
+namespace Config;
 
 use CodeIgniter\Router\RouteCollection;
 
 /**
  * @var RouteCollection $routes
  */
-$routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Home');
-$routes->setDefaultMethod('index');
-$routes->setTranslateURIDashes(false);
-$routes->set404Override();
-
-// Main routes
-$routes->get('/', 'Home::index');
-$routes->get('/home', 'Home::index');
-
-// Authentication routes
-$routes->get('/login', 'Auth::login');
-$routes->post('/login', 'Auth::authenticate');
-$routes->get('/logout', 'Auth::logout');
+$routes->get('/', 'Auth::login');
 $routes->get('/register', 'Auth::register');
-$routes->post('/register', 'Auth::create');
+$routes->post('/register', 'Auth::register');
+$routes->get('/login', 'Auth::login');
+$routes->post('/login', 'Auth::login');
+$routes->get('/logout', 'Auth::logout');
 
-// Dashboard (requires authentication)
+// Protected routes
 $routes->group('', ['filter' => 'auth'], function($routes) {
-    $routes->get('/dashboard', 'Dashboard::index');
+    // Dashboard
+    $routes->get('/dashboard', 'Orders::index');
     
-    // Search routes
-    $routes->get('/search', 'Search::index');
-    $routes->post('/search', 'Search::results');
-    $routes->get('/search/compare/(:num)/(:num)', 'Search::compare/$1/$2');
-    
-    // Cart routes
-    $routes->get('/cart', 'Cart::index');
-    $routes->post('/cart/add', 'Cart::add');
-    $routes->post('/cart/update', 'Cart::update');
-    $routes->post('/cart/remove', 'Cart::remove');
-    $routes->get('/cart/count', 'Cart::count');
-    
-    // Vendor routes
-    $routes->get('/vendors', 'Vendors::index');
-    $routes->get('/vendors/view/(:num)', 'Vendors::view/$1');
-    $routes->get('/vendors/contact/(:num)', 'Vendors::contact/$1');
-    $routes->post('/vendors/contact/(:num)', 'Vendors::sendMessage/$1');
-    
-    // Product routes
-    $routes->get('/products', 'Products::index');
-    $routes->get('/products/view/(:num)', 'Products::view/$1');
-    
-    // Order routes
+    // Orders
     $routes->get('/orders', 'Orders::index');
-    $routes->get('/orders/view/(:num)', 'Orders::view/$1');
-    $routes->post('/orders/create', 'Orders::create');
+    $routes->get('/orders/new', 'Orders::new');
+    $routes->post('/orders/new', 'Orders::new');
+    $routes->get('/orders/searchInventory', 'Orders::searchInventory');
     
-    // Customer routes
+    // Customers
     $routes->get('/customers', 'Customers::index');
-    $routes->get('/customers/view/(:num)', 'Customers::view/$1');
+    $routes->get('/customers/add', 'Customers::add');
+    $routes->post('/customers/add', 'Customers::add');
+    $routes->get('/customers/edit/(:num)', 'Customers::edit/$1');
+    $routes->post('/customers/edit/(:num)', 'Customers::edit/$1');
+    $routes->get('/customers/delete/(:num)', 'Customers::delete/$1');
     
-    // Reports routes
+    // Inventory
+    $routes->get('/inventory', 'Inventory::index');
+    $routes->get('/inventory/add', 'Inventory::add');
+    $routes->post('/inventory/add', 'Inventory::add');
+    $routes->get('/inventory/edit/(:num)', 'Inventory::edit/$1');
+    $routes->post('/inventory/edit/(:num)', 'Inventory::edit/$1');
+    $routes->get('/inventory/delete/(:num)', 'Inventory::delete/$1');
+    
+    // Vendors
+    $routes->get('/vendors', 'Vendors::index');
+    $routes->get('/vendors/add', 'Vendors::add');
+    $routes->post('/vendors/add', 'Vendors::add');
+    $routes->get('/vendors/edit/(:num)', 'Vendors::edit/$1');
+    $routes->post('/vendors/edit/(:num)', 'Vendors::edit/$1');
+    $routes->get('/vendors/delete/(:num)', 'Vendors::delete/$1');
+    
+    // Reports
     $routes->get('/reports', 'Reports::index');
-    $routes->get('/reports/sales', 'Reports::sales');
-    $routes->get('/reports/inventory', 'Reports::inventory');
-});
-
-// API routes
-$routes->group('api', function($routes) {
-    $routes->post('/products/search', 'Api\Products::search');
-    $routes->get('/vendors/(:num)/products', 'Api\Vendors::products/$1');
-    $routes->get('/pricing/(:num)', 'Api\Pricing::getProductPricing/$1');
-});
-
-// Admin routes (requires admin authentication)
-$routes->group('admin', ['filter' => 'admin'], function($routes) {
-    $routes->get('/', 'Admin\Dashboard::index');
-    $routes->get('/users', 'Admin\Users::index');
-    $routes->get('/settings', 'Admin\Settings::index');
+    
+    // Admin routes
+    $routes->group('', ['filter' => 'admin'], function($routes) {
+        $routes->get('/admin', 'Admin::index');
+        $routes->get('/admin/users', 'Admin::users');
+        $routes->get('/admin/users/add', 'Admin::addUser');
+        $routes->post('/admin/users/add', 'Admin::addUser');
+        $routes->get('/admin/users/edit/(:num)', 'Admin::editUser/$1');
+        $routes->post('/admin/users/edit/(:num)', 'Admin::editUser/$1');
+        $routes->get('/admin/users/delete/(:num)', 'Admin::deleteUser/$1');
+        
+        $routes->get('/admin/discount-groups', 'Admin::discountGroups');
+        $routes->get('/admin/discount-groups/add', 'Admin::addDiscountGroup');
+        $routes->post('/admin/discount-groups/add', 'Admin::addDiscountGroup');
+        $routes->get('/admin/discount-groups/edit/(:num)', 'Admin::editDiscountGroup/$1');
+        $routes->post('/admin/discount-groups/edit/(:num)', 'Admin::editDiscountGroup/$1');
+        $routes->get('/admin/discount-groups/delete/(:num)', 'Admin::deleteDiscountGroup/$1');
+    });
 });
