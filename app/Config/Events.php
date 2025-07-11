@@ -22,13 +22,13 @@ use CodeIgniter\HotReloader\HotReloader;
  * Example:
  *      Events::on('create', [$myInstance, 'myMethod']);
  */
+Events::on('post_controller_constructor', static function () {
+    $router = service('router');
+    log_message('debug', 'AutoRoute Hit - Controller: ' . $router->controllerName());
+    log_message('debug', 'AutoRoute Hit - Method: ' . $router->methodName());
+});
 
 Events::on('pre_system', static function () {
-    Events::on('post_controller_constructor', static function () {
-        $router = service('router');
-        log_message('debug', 'AutoRoute Hit - Controller: ' . $router->controllerName());
-        log_message('debug', 'AutoRoute Hit - Method: ' . $router->methodName());
-    });
     if (ENVIRONMENT !== 'testing') {
         if (ini_get('zlib.output_compression')) {
             throw FrameworkException::forEnabledZlibOutputCompression();
