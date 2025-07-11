@@ -6,10 +6,13 @@ class BaseController extends Controller
 {
     protected $helpers = ['form', 'url', 'auth'];
 
-    public function initController(\CodeIgniter\HTTP\RequestInterface $request, \CodeIgniter\HTTP\ResponseInterface $response, \Psr\Log\LoggerInterface $logger)
+    public function initController($request, $response, $logger)
     {
         parent::initController($request, $response, $logger);
         
-        // Add any code here that should run for all controllers
+        // Add global CSRF token to all views
+        if (session()->has('csrf_token')) {
+            $this->setVar('csrf_token', session()->csrf_token);
+        }
     }
 }
