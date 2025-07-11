@@ -64,8 +64,19 @@ class Admin extends BaseController
 
     public function updateUser($id)
     {
+        // Validate CSRF token first
+        if (!csrf_hash_is_valid($this->request->getPost('csrf_test_name'), $this->request->getPost('csrf_token'))) {
+            return redirect()->back()->with('error', 'Invalid CSRF token');
+        }
+
         $userModel = new \App\Models\UserModel();
         
+        // Verify user belongs to current company
+        $user = $userModel->find($id);
+        if (!$user || $user['company_id'] != session()->get('company_id')) {
+            return redirect()->to('/admin/users')->with('error', 'User not found');
+        }
+
         $data = [
             'first_name' => $this->request->getPost('first_name'),
             'last_name' => $this->request->getPost('last_name'),
@@ -73,17 +84,20 @@ class Admin extends BaseController
             'role' => $this->request->getPost('role'),
             'status' => $this->request->getPost('status')
         ];
-        
+
         // Only update password if provided
-        if ($this->request->getPost('password')) {
-            $data['password'] = $this->request->getPost('password');
+        if ($password = $this->request->getPost('password')) {
+            $data['password'] = password_hash($password, PASSWORD_DEFAULT);
         }
-        
+
         if (!$userModel->update($id, $data)) {
-            return redirect()->back()->withInput()->with('errors', $userModel->errors());
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', $userModel->errors());
         }
-        
-        return redirect()->to('/admin/users')->with('message', 'User updated successfully');
+
+        return redirect()->to('/admin/users')
+            ->with('message', 'User updated successfully');
     }
     public function editDiscountGroup($id)
     {
