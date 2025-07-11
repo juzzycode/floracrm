@@ -496,11 +496,14 @@
         // Phone number formatting
         document.getElementById('phone').addEventListener('input', function() {
             let value = this.value.replace(/\D/g, '');
-            if (value.length >= 6) {
-                value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-            } else if (value.length >= 3) {
-                value = value.replace(/(\d{3})(\d{0,3})/, '($1) $2');
+            
+            // Format as (123) 456-7890 if US number (10 digits)
+            if (value.length > 3 && value.length <= 6) {
+                value = value.replace(/(\d{3})(\d{1,3})/, '($1) $2');
+            } else if (value.length > 6) {
+                value = value.replace(/(\d{3})(\d{3})(\d{1,4})/, '($1) $2-$3');
             }
+            
             this.value = value;
         });
         
@@ -515,6 +518,10 @@
         
         // Form submission
         document.getElementById('registerForm').addEventListener('submit', function(e) {
+             const phoneInput = document.getElementById('phone');
+            if (phoneInput.value) {
+                phoneInput.value = phoneInput.value.replace(/\D/g, '');
+            }
             if (!validateStep(3)) {
                 e.preventDefault();
                 return false;
