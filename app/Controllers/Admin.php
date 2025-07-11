@@ -29,7 +29,7 @@ class Admin extends BaseController
         
         return view('admin/discount_groups', $data);
     }
-    
+
     public function addDiscountGroup()
     {
         return view('admin/add_discount_group');
@@ -49,7 +49,42 @@ class Admin extends BaseController
         
         return redirect()->to('/admin/discount-groups')->with('message', 'Discount group added successfully');
     }
+    public function editUser($id)
+    {
+        $userModel = new \App\Models\UserModel();
+        $data['user'] = $userModel->find($id);
+        
+        // Verify the user belongs to the same company
+        if ($data['user']['company_id'] != session()->get('company_id')) {
+            return redirect()->to('/admin/users')->with('error', 'You cannot edit this user');
+        }
+        
+        return view('admin/edit_user', $data);
+    }
 
+    public function updateUser($id)
+    {
+        $userModel = new \App\Models\UserModel();
+        
+        $data = [
+            'first_name' => $this->request->getPost('first_name'),
+            'last_name' => $this->request->getPost('last_name'),
+            'email' => $this->request->getPost('email'),
+            'role' => $this->request->getPost('role'),
+            'status' => $this->request->getPost('status')
+        ];
+        
+        // Only update password if provided
+        if ($this->request->getPost('password')) {
+            $data['password'] = $this->request->getPost('password');
+        }
+        
+        if (!$userModel->update($id, $data)) {
+            return redirect()->back()->withInput()->with('errors', $userModel->errors());
+        }
+        
+        return redirect()->to('/admin/users')->with('message', 'User updated successfully');
+    }
     public function editDiscountGroup($id)
     {
         $model = new DiscountGroupModel();

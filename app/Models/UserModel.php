@@ -9,7 +9,15 @@ class UserModel extends Model
     protected $allowedFields = ['company_id', 'first_name', 'last_name', 'email', 'password', 'role', 'last_login', 'status'];
     protected $beforeInsert = ['hashPassword'];
     protected $beforeUpdate = ['hashPassword'];
-
+    protected $validationRules = [
+        'first_name' => 'required|min_length[3]|max_length[50]',
+        'last_name' => 'required|min_length[3]|max_length[50]',
+        'email' => 'required|valid_email|is_unique[users.email,id,{id}]',
+        'password' => 'permit_empty|min_length[8]',
+        'role' => 'required|in_list[free,paid,admin]',
+        'status' => 'required|in_list[active,inactive]'
+    ];
+    
     protected function hashPassword(array $data)
     {
         if (isset($data['data']['password'])) {
