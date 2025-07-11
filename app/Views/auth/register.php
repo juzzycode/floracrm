@@ -13,6 +13,7 @@
                 <?php endif; ?>
                 
                 <form method="post" action="<?= site_url('register') ?>">
+                    <?= csrf_field() ?>
                     <h5>Company Information</h5>
                     <div class="mb-3">
                         <label for="company_name" class="form-label">Company Name</label>
