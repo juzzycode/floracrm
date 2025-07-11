@@ -57,7 +57,7 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     
     // Admin routes
     $routes->get('admin', 'Admin::index', ['filter' => 'admin']);
-    $routes->group('', ['filter' => 'admin'], function($routes) {/*
+    $routes->group('admin', ['filter' => 'admin'], function($routes) {/*
         $routes->get('/admin', 'Admin::index');
         $routes->get('/admin/users', 'Admin::users');
         $routes->get('/admin/users/add', 'Admin::addUser');
