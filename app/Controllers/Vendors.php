@@ -14,21 +14,51 @@ class Vendors extends BaseController
 
     public function add()
     {
-        if ($this->request->getMethod() === 'post') {
-            $model = new VendorModel();
-            $model->save([
-                'company_id' => session()->get('company_id'),
-                'name' => $this->request->getPost('name'),
-                'contact_person' => $this->request->getPost('contact_person'),
-                'email' => $this->request->getPost('email'),
-                'phone' => $this->request->getPost('phone'),
-                'address' => $this->request->getPost('address'),
-                'lead_time_days' => $this->request->getPost('lead_time_days')
-            ]);
-            
-            return redirect()->to('/vendors')->with('message', 'Vendor added successfully');
+        return view('vendors/add');
+    }
+
+    public function save()
+    {
+        $model = new VendorModel();
+        
+        if (!$model->save([
+            'company_id' => session()->get('company_id'),
+            'name' => $this->request->getPost('name'),
+            'contact_person' => $this->request->getPost('contact_person'),
+            'email' => $this->request->getPost('email'),
+            'phone' => $this->request->getPost('phone'),
+            'address' => $this->request->getPost('address'),
+            'lead_time_days' => $this->request->getPost('lead_time_days')
+        ])) {
+            return redirect()->back()->withInput()->with('errors', $model->errors());
         }
         
-        return view('vendors/add');
+        return redirect()->to('/vendors')->with('message', 'Vendor added successfully');
+    }
+
+    public function edit($id)
+    {
+        $model = new VendorModel();
+        $data['vendor'] = $model->find($id);
+        
+        return view('vendors/edit', $data);
+    }
+
+    public function update($id)
+    {
+        $model = new VendorModel();
+        
+        if (!$model->update($id, [
+            'name' => $this->request->getPost('name'),
+            'contact_person' => $this->request->getPost('contact_person'),
+            'email' => $this->request->getPost('email'),
+            'phone' => $this->request->getPost('phone'),
+            'address' => $this->request->getPost('address'),
+            'lead_time_days' => $this->request->getPost('lead_time_days')
+        ])) {
+            return redirect()->back()->withInput()->with('errors', $model->errors());
+        }
+        
+        return redirect()->to('/vendors')->with('message', 'Vendor updated successfully');
     }
 }
