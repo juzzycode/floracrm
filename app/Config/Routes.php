@@ -65,7 +65,7 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
         $routes->post('/admin/users/edit/(:num)', 'Admin::editUser/$1');
         $routes->get('/admin/users/delete/(:num)', 'Admin::deleteUser/$1');
         $routes->post('/admin/users/update/(:num)', 'Admin::updateUser/$1');
-        $routes->get('/admin/users/update/(:num)', 'Admin::updateUser/$1');
+        $routes->post('users/update/(:num)', 'Admin::updateUser/$1');
 
         $routes->get('/admin/discount-groups', 'Admin::discountGroups');
         $routes->get('/admin/discount-groups/add', 'Admin::addDiscountGroup');
