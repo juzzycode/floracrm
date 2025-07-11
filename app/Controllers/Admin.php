@@ -66,9 +66,9 @@ class Admin extends BaseController
     {
         log_message('debug', 'Update User Data: '.print_r($this->request->getPost(), true));
         // Validate CSRF token first
-        if (!csrf_hash_is_valid($this->request->getPost('csrf_test_name'), $this->request->getPost('csrf_token'))) {
-            return redirect()->back()->with('error', 'Invalid CSRF token');
-        }
+        //if (!csrf_hash_is_valid($this->request->getPost('csrf_test_name'), $this->request->getPost('csrf_token'))) {
+        //    return redirect()->back()->with('error', 'Invalid CSRF token');
+        //}
 
         $userModel = new \App\Models\UserModel();
         

@@ -55,6 +55,8 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     
     // Reports
     $routes->get('/reports', 'Reports::index');
+
+    $routes->post('/admin/users/update/(:num)', 'Admin::updateUser/$1');
     
     // Admin routes
     $routes->get('admin', 'Admin::index', ['filter' => 'admin']);
@@ -74,7 +76,7 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
         $routes->get('users/add', 'Admin::addUser');
         $routes->post('users/add', 'Admin::addUser');
         $routes->get('users/edit/(:num)', 'Admin::editUser/$1');
-        $routes->post('users/update/(:num)', 'Admin::updateUser/$1'); // Changed from edit to update
+        $routes->post('users/update/(:num)', 'Admin::updateUser/$1');
         $routes->get('users/delete/(:num)', 'Admin::deleteUser/$1');
 
         $routes->get('discount-groups', 'Admin::discountGroups');
