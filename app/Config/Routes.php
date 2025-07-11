@@ -3,7 +3,7 @@
 namespace Config;
 
 use CodeIgniter\Router\RouteCollection;
-$routes->setAutoRoute(true);
+//$routes->setAutoRoute(true);
 /**
  * @var RouteCollection $routes
  */
@@ -56,7 +56,7 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     // Reports
     $routes->get('/reports', 'Reports::index');
 
-    $routes->post('/admin/users/update/(:num)', 'Admin::updateUser/$1');
+    //$routes->post('/admin/users/update/(:num)', 'Admin::updateUser/$1');
     
     // Admin routes
     $routes->get('admin', 'Admin::index', ['filter' => 'admin']);
