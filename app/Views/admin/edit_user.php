@@ -50,7 +50,7 @@
                 <option value="inactive" <?= $user['status'] === 'inactive' ? 'selected' : '' ?>>Inactive</option>
             </select>
         </div>
-        
+        <input type="hidden" name="_method" value="PUT"> <!-- For proper RESTful handling -->
         <button type="submit" class="btn btn-primary">Update User</button>
     </form>
 </div>
