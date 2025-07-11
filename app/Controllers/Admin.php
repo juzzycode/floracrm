@@ -29,6 +29,47 @@ class Admin extends BaseController
         
         return view('admin/discount_groups', $data);
     }
+    
+    public function addDiscountGroup()
+    {
+        return view('admin/add_discount_group');
+    }
 
+    public function saveDiscountGroup()
+    {
+        $model = new DiscountGroupModel();
+        
+        if (!$model->save([
+            'company_id' => session()->get('company_id'),
+            'name' => $this->request->getPost('name'),
+            'discount_percent' => $this->request->getPost('discount_percent')
+        ])) {
+            return redirect()->back()->withInput()->with('errors', $model->errors());
+        }
+        
+        return redirect()->to('/admin/discount-groups')->with('message', 'Discount group added successfully');
+    }
+
+    public function editDiscountGroup($id)
+    {
+        $model = new DiscountGroupModel();
+        $data['group'] = $model->find($id);
+        
+        return view('admin/edit_discount_group', $data);
+    }
+
+    public function updateDiscountGroup($id)
+    {
+        $model = new DiscountGroupModel();
+        
+        if (!$model->update($id, [
+            'name' => $this->request->getPost('name'),
+            'discount_percent' => $this->request->getPost('discount_percent')
+        ])) {
+            return redirect()->back()->withInput()->with('errors', $model->errors());
+        }
+        
+        return redirect()->to('/admin/discount-groups')->with('message', 'Discount group updated successfully');
+    }
     // Add other methods (addUser, editUser, etc.) as needed
 }

@@ -32,6 +32,7 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->get('/customers/edit/(:num)', 'Customers::edit/$1');
     $routes->post('/customers/edit/(:num)', 'Customers::edit/$1');
     $routes->get('/customers/delete/(:num)', 'Customers::delete/$1');
+    $routes->post('/customers/update/(:num)', 'Customers::update/$1');
     
     // Inventory
     $routes->get('/inventory', 'Inventory::index');
@@ -40,6 +41,7 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->get('/inventory/edit/(:num)', 'Inventory::edit/$1');
     $routes->post('/inventory/edit/(:num)', 'Inventory::edit/$1');
     $routes->get('/inventory/delete/(:num)', 'Inventory::delete/$1');
+    $routes->post('/inventory/update/(:num)', 'Inventory::update/$1');
     
     // Vendors
     $routes->get('/vendors', 'Vendors::index');
@@ -48,6 +50,7 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->get('/vendors/edit/(:num)', 'Vendors::edit/$1');
     $routes->post('/vendors/edit/(:num)', 'Vendors::edit/$1');
     $routes->get('/vendors/delete/(:num)', 'Vendors::delete/$1');
+    $routes->post('/vendors/update/(:num)', 'Vendors::update/$1');
     
     // Reports
     $routes->get('/reports', 'Reports::index');
@@ -68,5 +71,9 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
         $routes->get('/admin/discount-groups/edit/(:num)', 'Admin::editDiscountGroup/$1');
         $routes->post('/admin/discount-groups/edit/(:num)', 'Admin::editDiscountGroup/$1');
         $routes->get('/admin/discount-groups/delete/(:num)', 'Admin::deleteDiscountGroup/$1');
+        //$routes->get('discount-groups/add', 'Admin::addDiscountGroup');
+        //$routes->post('discount-groups/add', 'Admin::saveDiscountGroup');
+        //$routes->get('discount-groups/edit/(:num)', 'Admin::editDiscountGroup/$1');
+        //$routes->post('discount-groups/update/(:num)', 'Admin::updateDiscountGroup/$1');
     });
 });
