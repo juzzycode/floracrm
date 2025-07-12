@@ -10,14 +10,17 @@ class UserModel extends Model
     protected $beforeInsert = ['hashPassword'];
     protected $beforeUpdate = ['hashPassword'];
     protected $validationRules = [
-        'first_name' => 'required|min_length[3]|max_length[50]',
-        'last_name' => 'required|min_length[3]|max_length[50]',
-        'email' => 'required|valid_email|is_unique[users.email,id,{id}]',
-        'password' => 'permit_empty|min_length[8]',
-        'role' => 'required|in_list[free,paid,admin]',
-        'status' => 'required|in_list[active,inactive]'
+    'company_id' => 'required|numeric',
+    'first_name' => 'required|min_length[2]|max_length[50]',
+    'last_name' => 'required|min_length[2]|max_length[50]',
+    'email' => 'required|valid_email|is_unique[users.email]',
+    'password' => 'required|min_length[8]',
+    'role' => 'required|in_list[free,paid,admin]',
+    'status' => 'required|in_list[active,inactive]'
     ];
-    
+
+    protected $beforeInsert = ['hashPassword'];
+
     protected function hashPassword(array $data)
     {
         if (isset($data['data']['password'])) {
@@ -25,7 +28,6 @@ class UserModel extends Model
         }
         return $data;
     }
-
     public function getUsersByCompany($companyId)
     {
         return $this->where('company_id', $companyId)->findAll();
