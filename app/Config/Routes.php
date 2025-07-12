@@ -29,6 +29,7 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->get('/customers', 'Customers::index');
     $routes->get('/customers/add', 'Customers::add');
     $routes->post('/customers/add', 'Customers::add');
+    $routes->post('customers/save', 'Customers::save');
     $routes->get('/customers/edit/(:num)', 'Customers::edit/$1');
     $routes->post('/customers/edit/(:num)', 'Customers::edit/$1');
     $routes->get('/customers/delete/(:num)', 'Customers::delete/$1');

@@ -11,6 +11,15 @@ class CustomerModel extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
+    protected $validationRules = [
+        'company_id' => 'required|numeric',
+        'first_name' => 'required|min_length[2]|max_length[50]',
+        'last_name' => 'required|min_length[2]|max_length[50]',
+        'email' => 'permit_empty|valid_email',
+        'phone' => 'required|min_length[6]|max_length[20]',
+        'address' => 'permit_empty|max_length[255]'
+    ];
+    
     public function getCustomersByCompany($companyId)
     {
         return $this->where('company_id', $companyId)->findAll();
