@@ -7,6 +7,10 @@ class Admin extends BaseController
 {
     public function index()
     {
+        echo "Current Role: " . session()->get('role');
+        echo "<br>Session Data: ";
+        print_r(session()->get());
+        exit;
         if (session()->get('role') !== 'admin') {
             return redirect()->to('/dashboard');
         }
@@ -21,7 +25,41 @@ class Admin extends BaseController
         
         return view('admin/users', $data);
     }
+    public function addUser()
+    {
+        return view('admin/add_user');
+    }
 
+    public function saveUser()
+    {
+        $userModel = new \App\Models\UserModel();
+        
+        // Validate passwords match
+        if ($this->request->getPost('password') !== $this->request->getPost('password_confirm')) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Passwords do not match');
+        }
+        
+        $data = [
+            'company_id' => session()->get('company_id'),
+            'first_name' => $this->request->getPost('first_name'),
+            'last_name' => $this->request->getPost('last_name'),
+            'email' => $this->request->getPost('email'),
+            'password' => $this->request->getPost('password'),
+            'role' => $this->request->getPost('role'),
+            'status' => $this->request->getPost('status')
+        ];
+        
+        if (!$userModel->save($data)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', $userModel->errors());
+        }
+        
+        return redirect()->to(route_to('admin.users'))
+            ->with('message', 'User created successfully');
+    }
     public function discountGroups()
     {
         $model = new DiscountGroupModel();

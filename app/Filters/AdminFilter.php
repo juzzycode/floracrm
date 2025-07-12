@@ -10,6 +10,10 @@ class AdminFilter implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
+        if (!session()->has('isLoggedIn')) {
+            return redirect()->to('/login');
+        }
+        
         if (session()->get('role') !== 'admin') {
             return redirect()->to('/dashboard')->with('error', 'You do not have permission to access that page.');
         }
