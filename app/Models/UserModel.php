@@ -19,8 +19,6 @@ class UserModel extends Model
     'status' => 'required|in_list[active,inactive]'
     ];
 
-    protected $beforeInsert = ['hashPassword'];
-
     protected function hashPassword(array $data)
     {
         if (isset($data['data']['password'])) {
