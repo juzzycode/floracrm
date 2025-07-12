@@ -7,10 +7,6 @@ class Admin extends BaseController
 {
     public function index()
     {
-        echo "Current Role: " . session()->get('role');
-        echo "<br>Session Data: ";
-        print_r(session()->get());
-        exit;
         if (session()->get('role') !== 'admin') {
             return redirect()->to('/dashboard');
         }

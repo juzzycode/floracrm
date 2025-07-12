@@ -9,6 +9,7 @@
     <?php endif; ?>
     
     <form method="post" action="<?= site_url('orders/new') ?>">
+        <?= csrf_field() ?>
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
